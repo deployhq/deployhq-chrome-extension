@@ -53,7 +53,6 @@ class DeployHQApi {
         throw new ApiAccessError(body.message ?? 'API access restricted.', body.upgrade_url);
       }
       const text = await response.text();
-      console.error('[DeployHQ] API error response:', response.status, text);
       let message = `Request failed (${response.status})`;
       try {
         const body = JSON.parse(text) as Record<string, unknown>;
@@ -120,7 +119,6 @@ class DeployHQApi {
     params: CreateDeploymentParams
   ): Promise<Deployment> {
     const body = { deployment: params };
-    console.log('[DeployHQ] createDeployment payload:', body);
     return this.request<Deployment>(`/projects/${projectPermalink}/deployments.json`, {
       method: 'POST',
       body: JSON.stringify(body),

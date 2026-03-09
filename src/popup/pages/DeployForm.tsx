@@ -29,11 +29,10 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
     const load = async () => {
       try {
         const [srvs, grps, branchList] = await Promise.all([
-          api.listServers(permalink).catch((e) => { console.error('[DeployHQ] listServers error:', e); return [] as Server[]; }),
-          api.listServerGroups(permalink).catch((e) => { console.error('[DeployHQ] listServerGroups error:', e); return [] as ServerGroup[]; }),
-          api.listBranches(permalink).catch((e) => { console.error('[DeployHQ] listBranches error:', e); return [] as string[]; }),
+          api.listServers(permalink).catch(() => [] as Server[]),
+          api.listServerGroups(permalink).catch(() => [] as ServerGroup[]),
+          api.listBranches(permalink).catch(() => [] as string[]),
         ]);
-        console.log('[DeployHQ] DeployForm loaded:', { permalink, servers: srvs, groups: grps, branches: branchList });
         setServers(srvs);
         setGroups(grps);
         setBranches(branchList);

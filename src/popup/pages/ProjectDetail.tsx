@@ -34,7 +34,6 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
       setGroups(grps);
       setDeployments(deps.records);
     } catch (err) {
-      console.error('[DeployHQ] ProjectDetail load error:', err);
       if (err instanceof ApiAuthError) {
         onNavigate({ type: 'login' });
         return;
