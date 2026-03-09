@@ -24,7 +24,7 @@ jobs:
         run: cd dist && zip -r ../extension.zip .
 
       - name: Upload to Chrome Web Store
-        uses: mobilefirstllc/cws-publish@v2
+        uses: MobileFirstLLC/cws-publish@v2.0.5
         with:
           action: publish
           client_id: ${{ secrets.CWS_CLIENT_ID }}
