@@ -23,12 +23,10 @@ jobs:
       - name: Create ZIP
         run: cd dist && zip -r ../extension.zip .
 
-      - name: Upload to Chrome Web Store
-        uses: MobileFirstLLC/cws-publish@v2.0.5
-        with:
-          action: publish
-          client_id: ${{ secrets.CWS_CLIENT_ID }}
-          client_secret: ${{ secrets.CWS_CLIENT_SECRET }}
-          refresh_token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          extension_id: ${{ secrets.CWS_EXTENSION_ID }}
-          zip_file: extension.zip
+      - name: Upload & publish to Chrome Web Store
+        run: npx chrome-webstore-upload-cli@3 upload --auto-publish --source extension.zip
+        env:
+          EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
