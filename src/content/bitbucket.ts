@@ -1,4 +1,4 @@
-import { createDeployButton, findMatchingProject, showToast, openExtensionPopup } from './shared';
+import { createDeployButton, createConnectButton, findMatchingProject, showToast, openExtensionPopup } from './shared';
 import type { Project } from '@/shared/types';
 
 const BUTTON_ID = 'deployhq-bitbucket-btn';
@@ -44,25 +44,32 @@ async function injectButton() {
     lastCheckedUrl = repoUrl;
   }
 
-  if (!cachedProject) return;
-  const project = cachedProject;
+  let btnElement: HTMLElement;
 
-  let branch: string | undefined;
-  if (branchMatch) {
-    branch = branchMatch[3];
+  if (cachedProject) {
+    const project = cachedProject;
+
+    let branch: string | undefined;
+    if (branchMatch) {
+      branch = branchMatch[3];
+    }
+
+    const btn = createDeployButton(() => {
+      openExtensionPopup(project.permalink, branch);
+      showToast('Opening deploy form...');
+    });
+    btnElement = btn;
+  } else {
+    btnElement = await createConnectButton({ platform: 'bitbucket', repoOwner: workspace, repoName: repo });
   }
 
-  const btn = createDeployButton(() => {
-    openExtensionPopup(project.permalink, branch);
-    showToast('Opening deploy form...');
-  });
-  btn.id = BUTTON_ID;
+  btnElement.id = BUTTON_ID;
 
   // Bitbucket PR page
   if (prMatch) {
     const header = document.querySelector('[data-testid="pr-header-actions"]');
     if (header) {
-      header.prepend(btn);
+      header.prepend(btnElement);
       return;
     }
   }
@@ -70,7 +77,7 @@ async function injectButton() {
   // Branch page - inject near source actions
   const sourceActions = document.querySelector('[data-testid="content-header-actions"]');
   if (sourceActions) {
-    sourceActions.appendChild(btn);
+    sourceActions.appendChild(btnElement);
   }
 }
 

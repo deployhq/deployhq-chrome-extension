@@ -6,25 +6,34 @@ const STYLES = `
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  padding: 3px 12px;
   font-size: 12px;
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #fff;
-  background-color: #006fc7;
+  background-color: #5740cf;
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   cursor: pointer;
   line-height: 20px;
   white-space: nowrap;
   transition: background-color 0.15s;
+  text-decoration: none;
 }
 .deployhq-btn:hover {
-  background-color: #0059a1;
+  background-color: #4f3fa2;
+}
+.deployhq-btn--secondary {
+  background-color: transparent;
+  color: #5740cf;
+  border: 1px solid #5740cf;
+}
+.deployhq-btn--secondary:hover {
+  background-color: #f3f1ff;
 }
 .deployhq-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 .deployhq-toast {
@@ -65,6 +74,8 @@ injectStyles();
 
 const DEPLOY_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>`;
 
+const LINK_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`;
+
 export function createDeployButton(onClick: () => void): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.className = 'deployhq-btn';
@@ -75,6 +86,36 @@ export function createDeployButton(onClick: () => void): HTMLButtonElement {
     onClick();
   });
   return btn;
+}
+
+export interface ConnectButtonOptions {
+  platform?: 'github' | 'gitlab' | 'bitbucket';
+  repoOwner?: string;
+  repoName?: string;
+}
+
+export async function createConnectButton(options?: ConnectButtonOptions): Promise<HTMLAnchorElement> {
+  const creds = await chrome.storage.local.get('deployhq_credentials');
+  const subdomain = creds.deployhq_credentials?.accountSubdomain ?? 'app';
+  const link = document.createElement('a');
+  link.className = 'deployhq-btn deployhq-btn--secondary';
+  link.innerHTML = `${LINK_ICON_SVG} Connect to DeployHQ`;
+
+  const url = new URL(`https://${subdomain}.deployhq.com/projects/new`);
+  if (options?.repoName) {
+    url.searchParams.set('name', options.repoName);
+  }
+  if (options?.platform) {
+    url.searchParams.set('scm', options.platform);
+  }
+  if (options?.repoOwner && options?.repoName) {
+    url.searchParams.set('repo', `${options.repoOwner}/${options.repoName}`);
+  }
+
+  link.href = url.toString();
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  return link;
 }
 
 export function showToast(message: string, type: 'success' | 'error' = 'success') {
@@ -103,28 +144,8 @@ export function normalizeRepoUrl(url: string): string {
 
 export async function findMatchingProject(repoUrl: string): Promise<Project | null> {
   try {
-    const normalizedTarget = normalizeRepoUrl(repoUrl);
-
-    // Get credentials from storage
-    const result = await chrome.storage.local.get('deployhq_credentials');
-    const creds = result.deployhq_credentials;
-    if (!creds) return null;
-
-    // Fetch projects directly (content scripts can't use the api module's state)
-    const response = await fetch(`https://${creds.accountSubdomain}.deployhq.com/projects.json`, {
-      headers: {
-        Authorization: `Basic ${btoa(`${creds.email}:${creds.apiKey}`)}`,
-        Accept: 'application/json',
-      },
-    });
-
-    if (!response.ok) return null;
-    const projects = (await response.json()) as Project[];
-
-    return projects.find((p) => {
-      if (!p.repository?.url) return false;
-      return normalizeRepoUrl(p.repository.url) === normalizedTarget;
-    }) ?? null;
+    const response = await chrome.runtime.sendMessage({ type: 'FIND_PROJECT', repoUrl });
+    return response?.project ?? null;
   } catch {
     return null;
   }

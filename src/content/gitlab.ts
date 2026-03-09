@@ -1,4 +1,4 @@
-import { createDeployButton, findMatchingProject, showToast, openExtensionPopup } from './shared';
+import { createDeployButton, createConnectButton, findMatchingProject, showToast, openExtensionPopup } from './shared';
 import type { Project } from '@/shared/types';
 
 const BUTTON_ID = 'deployhq-gitlab-btn';
@@ -36,6 +36,9 @@ async function injectButton() {
   const projectPath = mrMatch?.[1] ?? branchMatch?.[1];
   if (!projectPath) return;
 
+  const pathParts = projectPath.split('/');
+  const repoName = pathParts[pathParts.length - 1];
+  const repoOwner = pathParts.slice(0, -1).join('/');
   const repoUrl = `gitlab.com/${projectPath}`;
 
   if (lastCheckedUrl !== repoUrl) {
@@ -43,28 +46,35 @@ async function injectButton() {
     lastCheckedUrl = repoUrl;
   }
 
-  if (!cachedProject) return;
-  const project = cachedProject;
+  let btnElement: HTMLElement;
 
-  let branch: string | undefined;
-  if (mrMatch) {
-    const branchEl = document.querySelector('.ref-container .ref-name');
-    branch = branchEl?.textContent?.trim();
-  } else if (branchMatch) {
-    branch = branchMatch[2];
+  if (cachedProject) {
+    const project = cachedProject;
+
+    let branch: string | undefined;
+    if (mrMatch) {
+      const branchEl = document.querySelector('.ref-container .ref-name');
+      branch = branchEl?.textContent?.trim();
+    } else if (branchMatch) {
+      branch = branchMatch[2];
+    }
+
+    const btn = createDeployButton(() => {
+      openExtensionPopup(project.permalink, branch);
+      showToast('Opening deploy form...');
+    });
+    btnElement = btn;
+  } else {
+    btnElement = await createConnectButton({ platform: 'gitlab', repoOwner, repoName });
   }
 
-  const btn = createDeployButton(() => {
-    openExtensionPopup(project.permalink, branch);
-    showToast('Opening deploy form...');
-  });
-  btn.id = BUTTON_ID;
+  btnElement.id = BUTTON_ID;
 
   // GitLab MR page - inject in header actions
   if (mrMatch) {
     const header = document.querySelector('.detail-page-header-actions, .merge-request-details .gl-display-flex');
     if (header) {
-      header.prepend(btn);
+      header.prepend(btnElement);
       return;
     }
   }
@@ -72,7 +82,7 @@ async function injectButton() {
   // Branch page - inject near actions
   const treeControls = document.querySelector('.tree-controls, .repo-breadcrumb');
   if (treeControls) {
-    treeControls.appendChild(btn);
+    treeControls.appendChild(btnElement);
   }
 }
 

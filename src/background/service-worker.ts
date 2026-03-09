@@ -23,15 +23,19 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// Handle messages from popup
+// Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'POLL_NOW') {
     pollDeployments().then(() => sendResponse({ ok: true }));
-    return true; // async response
+    return true;
   }
   if (message.type === 'REFRESH_SETTINGS') {
     setupPolling();
     sendResponse({ ok: true });
+  }
+  if (message.type === 'FIND_PROJECT') {
+    findProjectForRepo(message.repoUrl).then((project) => sendResponse({ project }));
+    return true;
   }
 });
 
@@ -131,6 +135,37 @@ function updateBadge(state: 'ok' | 'running' | 'failed' | 'error' | 'disconnecte
     default:
       chrome.action.setBadgeText({ text: '' });
       break;
+  }
+}
+
+async function findProjectForRepo(repoUrl: string) {
+  try {
+    const projects = await api.listProjects();
+    const normalizedTarget = repoUrl
+      .replace(/^https?:\/\//, '')
+      .replace(/^git@/, '')
+      .replace(/\.git$/, '')
+      .replace('github.com:', 'github.com/')
+      .replace('gitlab.com:', 'gitlab.com/')
+      .replace('bitbucket.org:', 'bitbucket.org/')
+      .toLowerCase()
+      .replace(/\/$/, '');
+
+    return projects.find((p) => {
+      if (!p.repository?.url) return false;
+      const normalized = p.repository.url
+        .replace(/^https?:\/\//, '')
+        .replace(/^git@/, '')
+        .replace(/\.git$/, '')
+        .replace('github.com:', 'github.com/')
+        .replace('gitlab.com:', 'gitlab.com/')
+        .replace('bitbucket.org:', 'bitbucket.org/')
+        .toLowerCase()
+        .replace(/\/$/, '');
+      return normalized === normalizedTarget;
+    }) ?? null;
+  } catch {
+    return null;
   }
 }
 
