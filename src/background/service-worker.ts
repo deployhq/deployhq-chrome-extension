@@ -37,6 +37,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     findProjectForRepo(message.repoUrl).then((project) => sendResponse({ project }));
     return true;
   }
+  if (message.type === 'OPEN_DEPLOY') {
+    const popupUrl = chrome.runtime.getURL('popup.html');
+    chrome.windows.create({
+      url: popupUrl,
+      type: 'popup',
+      width: 400,
+      height: 550,
+    });
+    sendResponse({ ok: true });
+  }
 });
 
 async function setupPolling() {

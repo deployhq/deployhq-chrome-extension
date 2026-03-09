@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AppView } from '@/shared/types';
 import { getCredentials } from '@/shared/storage';
-import { useDeployIntent } from './hooks/useDeployIntent';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProjectDetail from './pages/ProjectDetail';
@@ -13,14 +12,32 @@ export default function App() {
   const [view, setView] = useState<AppView | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if opened from a content script (GitHub/GitLab/Bitbucket)
-  useDeployIntent(setView);
-
   useEffect(() => {
-    getCredentials().then((creds) => {
-      setView(creds ? { type: 'dashboard' } : { type: 'login' });
+    async function init() {
+      const creds = await getCredentials();
+      if (!creds) {
+        setView({ type: 'login' });
+        setLoading(false);
+        return;
+      }
+
+      // Check for deploy intent from content script
+      const result = await chrome.storage.local.get('deployhq_deploy_intent');
+      const intent = result.deployhq_deploy_intent;
+      if (intent && Date.now() - intent.timestamp < 30000) {
+        chrome.storage.local.remove('deployhq_deploy_intent');
+        setView({
+          type: 'project',
+          permalink: intent.permalink,
+        });
+      } else {
+        if (intent) chrome.storage.local.remove('deployhq_deploy_intent');
+        setView({ type: 'dashboard' });
+      }
+
       setLoading(false);
-    });
+    }
+    init();
   }, []);
 
   if (loading || !view) {
