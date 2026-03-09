@@ -1,0 +1,34 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Create ZIP
+        run: cd dist && zip -r ../extension.zip .
+
+      - name: Upload to Chrome Web Store
+        uses: mobilefirstllc/cws-publish@v2
+        with:
+          action: publish
+          client_id: ${{ secrets.CWS_CLIENT_ID }}
+          client_secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          extension_id: ${{ secrets.CWS_EXTENSION_ID }}
+          zip_file: extension.zip

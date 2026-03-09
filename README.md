@@ -105,6 +105,34 @@ Uses the [DeployHQ API](https://www.deployhq.com/docs/api) with HTTP Basic Authe
 - Content scripts use host permissions for git platforms
 - No credentials are logged or exposed in console output
 
+## Publishing
+
+The extension is published to the [Chrome Web Store](https://chrome.google.com/webstore) automatically via GitHub Actions.
+
+### Automated releases
+
+Push a version tag to trigger a build and publish:
+
+```bash
+# Update version in manifest.json and package.json, then:
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The workflow (`.github/workflows/publish.yml`) will:
+1. Build the extension (`npm ci && npm run build`)
+2. Create a ZIP from `dist/`
+3. Upload and publish to the Chrome Web Store
+
+### Required GitHub secrets
+
+| Secret | Description |
+|--------|-------------|
+| `CWS_CLIENT_ID` | Google OAuth2 client ID |
+| `CWS_CLIENT_SECRET` | Google OAuth2 client secret |
+| `CWS_REFRESH_TOKEN` | OAuth2 refresh token for CWS API |
+| `CWS_EXTENSION_ID` | Chrome Web Store extension ID |
+
 ## License
 
 MIT
