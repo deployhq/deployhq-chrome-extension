@@ -28,7 +28,7 @@ A Chrome extension for [DeployHQ](https://www.deployhq.com) — an automated dep
 
 ### From the Chrome Web Store
 
-1. Install the extension from the [Chrome Web Store](https://chrome.google.com/webstore) <!-- TODO: Add link -->
+1. Install the extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/deployhq-deploy-from-gith/pahgdlcagleleagcbmddeckbihgnemdm)
 2. Click the DeployHQ icon in your browser toolbar
 3. Enter your account subdomain, email, and API key
 4. Find your API key in DeployHQ under **Profile > API Key** or visit your [account settings](https://www.deployhq.com/app)
@@ -107,7 +107,7 @@ Uses the [DeployHQ API](https://www.deployhq.com/docs/api) with HTTP Basic Authe
 
 ## Publishing
 
-The extension is published to the [Chrome Web Store](https://chrome.google.com/webstore) automatically via GitHub Actions.
+The extension is published to the [Chrome Web Store](https://chromewebstore.google.com/detail/deployhq-deploy-from-gith/pahgdlcagleleagcbmddeckbihgnemdm) automatically via GitHub Actions.
 
 ### Automated releases
 
