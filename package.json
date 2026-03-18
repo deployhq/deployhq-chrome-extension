@@ -1,6 +1,6 @@
 {
   "name": "deployhq-chrome-extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DeployHQ Chrome Extension - Deploy from GitHub, GitLab & Bitbucket",
   "private": true,
   "type": "module",

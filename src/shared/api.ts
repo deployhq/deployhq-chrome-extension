@@ -40,6 +40,7 @@ class DeployHQApi {
         Authorization: `Basic ${authHeader}`,
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        'X-DeployHQ-Client': `deployhq-chrome-extension/${chrome.runtime.getManifest().version}`,
         ...options.headers,
       },
     });
