@@ -4,7 +4,7 @@ import { POLL_ALARM_NAME, STATUS_COLORS } from '@/shared/constants';
 import type { DeploymentStatus } from '@/shared/types';
 
 // Track deployment states to detect changes
-let lastKnownStatuses: Record<string, DeploymentStatus> = {};
+const lastKnownStatuses: Record<string, DeploymentStatus> = {};
 
 // Setup polling alarm on install
 chrome.runtime.onInstalled.addListener(() => {
@@ -102,7 +102,7 @@ async function pollDeployments() {
 
         // Notify on status change
         if (previousStatus && previousStatus !== latest.status) {
-          await notifyStatusChange(project.name, latest.status, latest.identifier);
+          await notifyStatusChange(project.name, latest.status);
         }
 
         lastKnownStatuses[key] = latest.status;
@@ -181,8 +181,7 @@ async function findProjectForRepo(repoUrl: string) {
 
 async function notifyStatusChange(
   projectName: string,
-  status: DeploymentStatus,
-  _deploymentId: string
+  status: DeploymentStatus
 ) {
   const settings = await getSettings();
   if (!settings.notificationsEnabled) return;
