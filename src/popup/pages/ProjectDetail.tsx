@@ -47,6 +47,19 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
     }
   };
 
+  const handleAbort = async (identifier: string) => {
+    setActionLoading(identifier);
+    setActionError('');
+    try {
+      await api.abortDeployment(permalink, identifier);
+      await loadData();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to abort deployment');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleRetry = async (identifier: string) => {
     setActionLoading(identifier);
     setActionError('');
@@ -161,6 +174,15 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
                     )}
                   </p>
                 </div>
+                {(dep.status === 'pending' || dep.status === 'running') && (
+                  <button
+                    onClick={() => handleAbort(dep.identifier)}
+                    disabled={actionLoading === dep.identifier}
+                    className={`text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {actionLoading === dep.identifier ? '...' : 'Abort'}
+                  </button>
+                )}
                 {dep.status === 'failed' && (
                   <button
                     onClick={() => handleRetry(dep.identifier)}
