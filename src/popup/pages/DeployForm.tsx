@@ -22,7 +22,10 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
   const [selectedBranch, setSelectedBranch] = useState(initialBranch ?? '');
   const [loading, setLoading] = useState(true);
   const [deploying, setDeploying] = useState(false);
+  const [aborting, setAborting] = useState(false);
+  const [aborted, setAborted] = useState(false);
   const [error, setError] = useState('');
+  const [abortError, setAbortError] = useState('');
   const [deploymentId, setDeploymentId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -144,6 +147,39 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
       }
     };
 
+    const handleAbort = async () => {
+      setAborting(true);
+      setAbortError('');
+      try {
+        await api.abortDeployment(permalink, deploymentId);
+        setAborted(true);
+      } catch (err) {
+        setAbortError(err instanceof Error ? err.message : 'Failed to abort deployment');
+      } finally {
+        setAborting(false);
+      }
+    };
+
+    if (aborted) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">Deployment Aborted</h3>
+          <p className="text-xs text-gray-500 mb-4">The deployment has been cancelled.</p>
+          <button
+            onClick={() => onNavigate({ type: 'project', permalink })}
+            className="text-sm text-deployhq-600 hover:underline font-medium"
+          >
+            Back to Project
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
         <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -153,12 +189,24 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
         </div>
         <h3 className="text-sm font-bold text-gray-900 mb-1">Deployment Queued</h3>
         <p className="text-xs text-gray-500 mb-4">Your deployment is being processed.</p>
-        <button
-          onClick={openDeploymentLogs}
-          className="text-sm text-deployhq-600 hover:underline font-medium"
-        >
-          View Deployment Logs
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={openDeploymentLogs}
+            className="text-sm text-deployhq-600 hover:underline font-medium"
+          >
+            View Deployment Logs
+          </button>
+          <button
+            onClick={handleAbort}
+            disabled={aborting}
+            className="text-xs px-4 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {aborting ? 'Aborting...' : 'Abort Deployment'}
+          </button>
+          {abortError && (
+            <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{abortError}</p>
+          )}
+        </div>
       </div>
     );
   }
