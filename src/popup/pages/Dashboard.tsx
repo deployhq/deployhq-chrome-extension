@@ -59,9 +59,25 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   if (loading) return <LoadingSpinner message="Loading..." />;
   if (error) return <ErrorMessage message={error} onRetry={loadData} />;
 
+  const handleStar = async (permalink: string) => {
+    try {
+      const result = await api.starProject(permalink);
+      setProjects((prev) =>
+        prev.map((p) => (p.permalink === permalink ? { ...p, starred: result.starred } : p))
+      );
+    } catch {
+      // Silently ignore star errors
+    }
+  };
+
+  const sorted = [...projects].sort((a, b) => {
+    if (a.starred !== b.starred) return a.starred ? -1 : 1;
+    return 0;
+  });
+
   const filtered = search
-    ? projects.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-    : projects;
+    ? sorted.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    : sorted;
 
   const tabClasses = (t: Tab) =>
     `px-4 py-2 text-sm ${
@@ -138,6 +154,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                   key={project.identifier}
                   project={project}
                   onClick={() => onNavigate({ type: 'project', permalink: project.permalink })}
+                  onStar={() => handleStar(project.permalink)}
                 />
               ))}
             </ul>
@@ -148,30 +165,47 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   );
 }
 
-function ProjectRow({ project, onClick }: { project: Project; onClick: () => void }) {
+function ProjectRow({ project, onClick, onStar }: { project: Project; onClick: () => void; onStar: () => void }) {
   const lastDeployed = project.last_deployed_at
     ? formatRelativeTime(project.last_deployed_at)
     : 'Never deployed';
 
   return (
     <li>
-      <button
-        onClick={onClick}
-        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
-      >
-        <div className="w-8 h-8 bg-deployhq-100 text-deployhq-700 rounded-lg flex items-center justify-center text-xs font-bold shrink-0">
-          {project.name.charAt(0).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">{project.name}</p>
-          <p className="text-xs text-gray-500 truncate">
-            {project.repository?.url ?? 'No repository'}
-          </p>
-        </div>
-        <div className="text-right shrink-0">
-          <p className="text-xs text-gray-400">{lastDeployed}</p>
-        </div>
-      </button>
+      <div className="flex items-center hover:bg-gray-50 transition-colors">
+        <button
+          onClick={onClick}
+          className="flex-1 px-4 py-3 flex items-center gap-3 text-left min-w-0"
+        >
+          <div className="w-8 h-8 bg-deployhq-100 text-deployhq-700 rounded-lg flex items-center justify-center text-xs font-bold shrink-0">
+            {project.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">{project.name}</p>
+            <p className="text-xs text-gray-500 truncate">
+              {project.repository?.url ?? 'No repository'}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-xs text-gray-400">{lastDeployed}</p>
+          </div>
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onStar(); }}
+          className="pr-4 pl-1 py-3 shrink-0"
+          aria-label={project.starred ? 'Unstar project' : 'Star project'}
+        >
+          <svg
+            className={`w-4 h-4 ${project.starred ? 'text-yellow-400 fill-current' : 'text-gray-300 hover:text-yellow-300'} transition-colors`}
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            fill={project.starred ? 'currentColor' : 'none'}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          </svg>
+        </button>
+      </div>
     </li>
   );
 }

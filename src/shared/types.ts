@@ -13,6 +13,7 @@ export interface Project {
   last_deployed_at: string | null;
   auto_deploy_url: string;
   zone: { identifier: string; hostname: string } | null;
+  starred: boolean;
 }
 
 export interface Repository {

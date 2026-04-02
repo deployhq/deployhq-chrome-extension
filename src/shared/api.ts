@@ -139,6 +139,13 @@ class DeployHQApi {
     });
   }
 
+  // Star
+  async starProject(permalink: string): Promise<{ message: string; starred: boolean }> {
+    return this.request<{ message: string; starred: boolean }>(`/projects/${permalink}/star.json`, {
+      method: 'POST',
+    });
+  }
+
   // Repository
   async listBranches(projectPermalink: string): Promise<string[]> {
     const data = await this.request<Record<string, string> | { name: string }[] | string[]>(
