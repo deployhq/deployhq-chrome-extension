@@ -35,3 +35,14 @@ export const PROTOCOL_LABELS: Record<string, string> = {
   heroku: 'Heroku',
   elastic_beanstalk: 'AWS EB',
 };
+
+export const EVENT_LABELS: Record<string, string> = {
+  deploy_completed: 'Deploy Completed',
+  deploy_failed: 'Deploy Failed',
+  deploy_started: 'Deploy Started',
+  deploy_running: 'Deploy Running',
+  deploy_pending: 'Deploy Pending',
+  deploy_queued: 'Deploy Queued',
+  deploy_cancelled: 'Deploy Cancelled',
+};
+

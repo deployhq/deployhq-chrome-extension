@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { AppView, Project, Server, ServerGroup, Deployment } from '@/shared/types';
 import { api, ApiAuthError } from '@/shared/api';
 import { PROTOCOL_LABELS } from '@/shared/constants';
+import { formatRelativeTime } from '@/shared/utils';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
@@ -18,6 +19,8 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -41,6 +44,32 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
       setError(err instanceof Error ? err.message : 'Failed to load project');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAbort = async (identifier: string) => {
+    setActionLoading(identifier);
+    setActionError('');
+    try {
+      await api.abortDeployment(permalink, identifier);
+      await loadData();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to abort deployment');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRetry = async (identifier: string) => {
+    setActionLoading(identifier);
+    setActionError('');
+    try {
+      await api.retryDeployment(permalink, identifier);
+      await loadData();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to retry deployment');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -141,15 +170,37 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
                   <p className="text-xs text-gray-400 mt-0.5">
                     {dep.deployer}
                     {dep.timestamps.completed_at && (
-                      <> &middot; {formatTime(dep.timestamps.completed_at)}</>
+                      <> &middot; {formatRelativeTime(dep.timestamps.completed_at)}</>
                     )}
                   </p>
                 </div>
+                {(dep.status === 'pending' || dep.status === 'running') && (
+                  <button
+                    onClick={() => handleAbort(dep.identifier)}
+                    disabled={actionLoading === dep.identifier}
+                    className={`text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {actionLoading === dep.identifier ? '...' : 'Abort'}
+                  </button>
+                )}
+                {dep.status === 'failed' && (
+                  <button
+                    onClick={() => handleRetry(dep.identifier)}
+                    disabled={actionLoading === dep.identifier}
+                    className={`text-xs px-2 py-1 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {actionLoading === dep.identifier ? '...' : 'Retry'}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
         )}
       </Section>
+
+      {actionError && (
+        <p className="mx-4 mt-2 text-xs text-red-600 bg-red-50 p-2 rounded-lg">{actionError}</p>
+      )}
     </div>
   );
 }
@@ -165,13 +216,3 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function formatTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return date.toLocaleDateString();
-}
