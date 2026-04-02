@@ -119,6 +119,28 @@ export interface ApiError {
   upgrade_url?: string;
 }
 
+export interface ActivityEvent {
+  event: string;
+  project: { identifier: string; name: string; permalink: string };
+  properties: Record<string, unknown>;
+  user: string;
+  created_at: string;
+}
+
+export interface DeployStats {
+  total_deployments: number;
+  total_deployments_delta: number;
+  success_rate: number | null;
+  success_rate_delta: number | null;
+  avg_duration: string;
+  active_servers: number;
+}
+
+export interface ActivityWithStatsResponse {
+  events: ActivityEvent[];
+  stats: DeployStats;
+}
+
 export type AppView =
   | { type: 'login' }
   | { type: 'dashboard' }

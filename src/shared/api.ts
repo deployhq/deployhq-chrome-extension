@@ -7,6 +7,7 @@ import type {
   CreateDeploymentParams,
   PaginatedResponse,
   ApiError,
+  ActivityWithStatsResponse,
 } from './types';
 import { getCredentials } from './storage';
 
@@ -126,6 +127,18 @@ class DeployHQApi {
     });
   }
 
+  async abortDeployment(projectPermalink: string, identifier: string): Promise<void> {
+    await this.request(`/projects/${projectPermalink}/deployments/${identifier}/abort.json`, {
+      method: 'POST',
+    });
+  }
+
+  async retryDeployment(projectPermalink: string, identifier: string): Promise<void> {
+    await this.request(`/projects/${projectPermalink}/deployments/${identifier}/retry.json`, {
+      method: 'POST',
+    });
+  }
+
   // Repository
   async listBranches(projectPermalink: string): Promise<string[]> {
     const data = await this.request<Record<string, string> | { name: string }[] | string[]>(
@@ -144,6 +157,11 @@ class DeployHQApi {
   ): Promise<{ ref: string; message: string }> {
     const query = branch ? `?branch=${encodeURIComponent(branch)}` : '';
     return this.request(`/projects/${projectPermalink}/repository/latest_revision.json${query}`);
+  }
+
+  // Activity
+  async listActivityWithStats(): Promise<ActivityWithStatsResponse> {
+    return this.request<ActivityWithStatsResponse>('/activity.json?include=stats');
   }
 
   // Validate credentials

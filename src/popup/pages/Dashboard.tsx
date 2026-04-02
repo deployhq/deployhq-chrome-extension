@@ -1,73 +1,148 @@
 import { useState, useEffect } from 'react';
-import type { AppView, Project } from '@/shared/types';
+import type { AppView, Project, ActivityEvent, DeployStats } from '@/shared/types';
 import { api, ApiAuthError } from '@/shared/api';
+import { formatRelativeTime } from '@/shared/utils';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import StatsWidget from '../components/StatsWidget';
+import ActivityItem from '../components/ActivityItem';
 
 interface DashboardProps {
   onNavigate: (view: AppView) => void;
 }
 
+type Tab = 'activity' | 'projects';
+
 export default function Dashboard({ onNavigate }: DashboardProps) {
+  const [tab, setTab] = useState<Tab>('activity');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [stats, setStats] = useState<DeployStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
 
-  const loadProjects = async () => {
+  const loadData = async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await api.listProjects();
-      setProjects(data);
-    } catch (err) {
-      if (err instanceof ApiAuthError) {
-        onNavigate({ type: 'login' });
-        return;
+      const [projectsResult, activityResult] = await Promise.allSettled([
+        api.listProjects(),
+        api.listActivityWithStats(),
+      ]);
+
+      if (projectsResult.status === 'fulfilled') {
+        setProjects(projectsResult.value);
+      } else {
+        const err = projectsResult.reason;
+        if (err instanceof ApiAuthError) {
+          onNavigate({ type: 'login' });
+          return;
+        }
+        setError(err instanceof Error ? err.message : 'Failed to load projects');
       }
-      setError(err instanceof Error ? err.message : 'Failed to load projects');
+
+      if (activityResult.status === 'fulfilled') {
+        setEvents(activityResult.value.events);
+        setStats(activityResult.value.stats);
+      }
+      // Stats/activity errors are silently ignored
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadProjects();
+    loadData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading) return <LoadingSpinner message="Loading projects..." />;
-  if (error) return <ErrorMessage message={error} onRetry={loadProjects} />;
+  if (loading) return <LoadingSpinner message="Loading..." />;
+  if (error) return <ErrorMessage message={error} onRetry={loadData} />;
 
   const filtered = search
     ? projects.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
     : projects;
 
+  const tabClasses = (t: Tab) =>
+    `px-4 py-2 text-sm ${
+      tab === t
+        ? 'text-deployhq-600 border-b-2 border-deployhq-600 font-medium'
+        : 'text-gray-500 hover:text-gray-700'
+    }`;
+
   return (
     <div className="flex flex-col">
-      <div className="px-4 py-3 border-b border-gray-200 bg-white sticky top-0">
-        <input
-          type="text"
-          placeholder="Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-gray-50"
-        />
+      {/* Tab bar */}
+      <div className="flex border-b border-gray-200" role="tablist">
+        <button className={tabClasses('activity')} onClick={() => setTab('activity')} role="tab" aria-selected={tab === 'activity'}>
+          Activity
+        </button>
+        <button className={tabClasses('projects')} onClick={() => setTab('projects')} role="tab" aria-selected={tab === 'projects'}>
+          Projects
+        </button>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-500 text-sm">
-          {search ? 'No projects match your search.' : 'No projects found.'}
+      {/* Tab content */}
+      {tab === 'activity' && (
+        <div className="pb-4" role="tabpanel">
+          {stats && (
+            <div className="px-4 py-3">
+              <StatsWidget stats={stats} />
+            </div>
+          )}
+          <div className="mt-1">
+            <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
+              Recent Activity
+            </h3>
+            {events.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 text-sm">
+                No recent activity
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {events.map((event, index) => (
+                  <ActivityItem
+                    key={`${event.created_at}-${index}`}
+                    event={event}
+                    onProjectClick={(permalink) =>
+                      onNavigate({ type: 'project', permalink })
+                    }
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      ) : (
-        <ul className="divide-y divide-gray-100">
-          {filtered.map((project) => (
-            <ProjectRow
-              key={project.identifier}
-              project={project}
-              onClick={() => onNavigate({ type: 'project', permalink: project.permalink })}
+      )}
+
+      {tab === 'projects' && (
+        <div role="tabpanel">
+          <div className="px-4 py-3 border-b border-gray-200 bg-white sticky top-0">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-gray-50"
             />
-          ))}
-        </ul>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 text-sm">
+              {search ? 'No projects match your search.' : 'No projects found.'}
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {filtered.map((project) => (
+                <ProjectRow
+                  key={project.identifier}
+                  project={project}
+                  onClick={() => onNavigate({ type: 'project', permalink: project.permalink })}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
       )}
     </div>
   );
@@ -99,22 +174,4 @@ function ProjectRow({ project, onClick }: { project: Project; onClick: () => voi
       </button>
     </li>
   );
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30) return `${diffDays}d ago`;
-
-  return date.toLocaleDateString();
 }
