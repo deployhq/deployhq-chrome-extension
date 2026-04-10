@@ -100,9 +100,11 @@ async function pollDeployments() {
           hasFailed = true;
         }
 
-        // Notify on status change
-        if (previousStatus && previousStatus !== latest.status) {
-          await notifyStatusChange(project.name, latest.status, latest.identifier);
+        // Notify on status change, or on first sight of a terminal status
+        if (previousStatus !== latest.status) {
+          if (previousStatus || latest.status === 'completed' || latest.status === 'failed') {
+            await notifyStatusChange(project.name, latest.status, latest.identifier);
+          }
         }
 
         lastKnownStatuses[key] = latest.status;
@@ -117,18 +119,24 @@ async function pollDeployments() {
     } else if (hasFailed) {
       updateBadge('failed');
     } else {
-      updateBadge('ok');
+      // Show green checkmark briefly then clear
+      updateBadge('completed');
+      setTimeout(() => updateBadge('ok'), 5000);
     }
   } catch {
     updateBadge('error');
   }
 }
 
-function updateBadge(state: 'ok' | 'running' | 'failed' | 'error' | 'disconnected') {
+function updateBadge(state: 'ok' | 'running' | 'failed' | 'error' | 'disconnected' | 'completed') {
   switch (state) {
     case 'running':
-      chrome.action.setBadgeText({ text: '...' });
+      chrome.action.setBadgeText({ text: '▶' });
       chrome.action.setBadgeBackgroundColor({ color: STATUS_COLORS.running });
+      break;
+    case 'completed':
+      chrome.action.setBadgeText({ text: '✓' });
+      chrome.action.setBadgeBackgroundColor({ color: STATUS_COLORS.completed });
       break;
     case 'failed':
       chrome.action.setBadgeText({ text: '!' });
