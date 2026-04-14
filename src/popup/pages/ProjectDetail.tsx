@@ -104,44 +104,52 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
         </button>
       </div>
 
-      {/* Servers */}
-      <Section title="Servers">
-        {servers.length === 0 ? (
-          <p className="px-4 text-xs text-gray-400">No servers configured</p>
-        ) : (
-          <ul className="divide-y divide-gray-100">
-            {servers.map((server) => (
-              <li key={server.identifier} className="px-4 py-2 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{server.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {PROTOCOL_LABELS[server.protocol_type] ?? server.protocol_type}
-                    {server.environment && ` / ${server.environment}`}
-                  </p>
-                </div>
-                {typeof server.last_revision === 'string' && server.last_revision && (
-                  <code className="text-xs text-gray-400 font-mono">
-                    {server.last_revision.slice(0, 7)}
-                  </code>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+      {/* Servers (ungrouped only) */}
+      {(() => {
+        const ungrouped = servers.filter((s) => !s.server_group_identifier);
+        return ungrouped.length > 0 ? (
+          <Section title="Servers">
+            <ul className="divide-y divide-gray-100">
+              {ungrouped.map((server) => (
+                <ServerRow key={server.identifier} server={server} />
+              ))}
+            </ul>
+          </Section>
+        ) : servers.length === 0 ? (
+          <Section title="Servers">
+            <p className="px-4 text-xs text-gray-400">No servers configured</p>
+          </Section>
+        ) : null;
+      })()}
 
-      {/* Server Groups */}
+      {/* Server Groups with nested servers */}
       {groups.length > 0 && (
         <Section title="Server Groups">
           <ul className="divide-y divide-gray-100">
-            {groups.map((group) => (
-              <li key={group.identifier} className="px-4 py-2">
-                <p className="text-sm font-medium text-gray-900">{group.name}</p>
-                <p className="text-xs text-gray-500">
-                  {group.branch} / {group.transfer_order}
-                </p>
-              </li>
-            ))}
+            {groups.map((group) => {
+              const groupServers = servers.filter(
+                (s) => s.server_group_identifier === group.identifier
+              );
+              return (
+                <li key={group.identifier} className="py-2">
+                  <div className="px-4">
+                    <p className="text-sm font-medium text-gray-900">{group.name}</p>
+                    {(group.branch || group.transfer_order) && (
+                      <p className="text-xs text-gray-500">
+                        {[group.branch, group.transfer_order].filter(Boolean).join(' / ')}
+                      </p>
+                    )}
+                  </div>
+                  {groupServers.length > 0 && (
+                    <ul className="mt-1 ml-4 divide-y divide-gray-50">
+                      {groupServers.map((server) => (
+                        <ServerRow key={server.identifier} server={server} />
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </Section>
       )}
@@ -202,6 +210,25 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
         <p className="mx-4 mt-2 text-xs text-red-600 bg-red-50 p-2 rounded-lg">{actionError}</p>
       )}
     </div>
+  );
+}
+
+function ServerRow({ server }: { server: Server }) {
+  return (
+    <li className="px-4 py-2 flex items-center gap-3">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 truncate">{server.name}</p>
+        <p className="text-xs text-gray-500">
+          {PROTOCOL_LABELS[server.protocol_type] ?? server.protocol_type}
+          {server.environment && ` / ${server.environment}`}
+        </p>
+      </div>
+      {typeof server.last_revision === 'string' && server.last_revision && (
+        <code className="text-xs text-gray-400 font-mono">
+          {server.last_revision.slice(0, 7)}
+        </code>
+      )}
+    </li>
   );
 }
 

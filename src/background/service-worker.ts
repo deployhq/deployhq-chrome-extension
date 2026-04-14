@@ -5,6 +5,7 @@ import type { DeploymentStatus } from '@/shared/types';
 
 // Track deployment states to detect changes
 const lastKnownStatuses: Record<string, DeploymentStatus> = {};
+let completedBadgeResetTimeout: ReturnType<typeof setTimeout> | undefined;
 
 // Setup polling alarm on install
 chrome.runtime.onInstalled.addListener(() => {
@@ -80,6 +81,7 @@ async function pollDeployments() {
 
     let hasRunning = false;
     let hasFailed = false;
+    let sawCompleted = false;
 
     // Check latest deployment for each project (just first 10 projects to limit API calls)
     const projectsToCheck = projects.slice(0, 10);
@@ -100,9 +102,14 @@ async function pollDeployments() {
           hasFailed = true;
         }
 
-        // Notify on status change
-        if (previousStatus && previousStatus !== latest.status) {
-          await notifyStatusChange(project.name, latest.status);
+        // Notify on status change, or on first sight of a terminal status
+        if (previousStatus !== latest.status) {
+          if (previousStatus || latest.status === 'completed' || latest.status === 'failed') {
+            await notifyStatusChange(project.name, latest.status);
+          }
+          if (latest.status === 'completed') {
+            sawCompleted = true;
+          }
         }
 
         lastKnownStatuses[key] = latest.status;
@@ -111,11 +118,23 @@ async function pollDeployments() {
       }
     }
 
+    if (completedBadgeResetTimeout !== undefined) {
+      clearTimeout(completedBadgeResetTimeout);
+      completedBadgeResetTimeout = undefined;
+    }
+
     // Update badge based on aggregate status
     if (hasRunning) {
       updateBadge('running');
     } else if (hasFailed) {
       updateBadge('failed');
+    } else if (sawCompleted) {
+      // Show green checkmark briefly then clear
+      updateBadge('completed');
+      completedBadgeResetTimeout = setTimeout(() => {
+        updateBadge('ok');
+        completedBadgeResetTimeout = undefined;
+      }, 5000);
     } else {
       updateBadge('ok');
     }
@@ -124,11 +143,15 @@ async function pollDeployments() {
   }
 }
 
-function updateBadge(state: 'ok' | 'running' | 'failed' | 'error' | 'disconnected') {
+function updateBadge(state: 'ok' | 'running' | 'failed' | 'error' | 'disconnected' | 'completed') {
   switch (state) {
     case 'running':
-      chrome.action.setBadgeText({ text: '...' });
+      chrome.action.setBadgeText({ text: '▶' });
       chrome.action.setBadgeBackgroundColor({ color: STATUS_COLORS.running });
+      break;
+    case 'completed':
+      chrome.action.setBadgeText({ text: '✓' });
+      chrome.action.setBadgeBackgroundColor({ color: STATUS_COLORS.completed });
       break;
     case 'failed':
       chrome.action.setBadgeText({ text: '!' });
