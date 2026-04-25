@@ -1,4 +1,5 @@
 import type { AppView } from '@/shared/types';
+import { getCredentials } from '@/shared/storage';
 
 interface HeaderProps {
   view: AppView;
@@ -18,6 +19,15 @@ export default function Header({ view, onNavigate, isDark, onToggleTheme }: Head
     }
   };
 
+  const openAccount = async () => {
+    const creds = await getCredentials();
+    if (creds) {
+      chrome.tabs.create({
+        url: `https://${creds.accountSubdomain}.deployhq.com`,
+      });
+    }
+  };
+
   return (
     <header className="bg-deployhq-900 dark:bg-gray-800 text-white px-4 py-3 flex items-center justify-between shrink-0">
       <div className="flex items-center gap-2">
@@ -32,14 +42,20 @@ export default function Header({ view, onNavigate, isDark, onToggleTheme }: Head
             </svg>
           </button>
         )}
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2C12 2 7 8 7 14l5 4 5-4c0-6-5-12-5-12z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-          <path d="M7 14l-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-          <path d="M17 14l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-          <path d="M10 18l2 4 2-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
-        </svg>
-        <h1 className="text-sm font-semibold tracking-wide">DeployHQ</h1>
+        <button
+          onClick={openAccount}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          aria-label="Open DeployHQ dashboard"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C12 2 7 8 7 14l5 4 5-4c0-6-5-12-5-12z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            <path d="M7 14l-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+            <path d="M17 14l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+            <path d="M10 18l2 4 2-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
+          </svg>
+          <h1 className="text-sm font-semibold tracking-wide">DeployHQ</h1>
+        </button>
       </div>
       <div className="flex items-center gap-1">
         <button
