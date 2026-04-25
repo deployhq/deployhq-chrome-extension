@@ -16,24 +16,24 @@ function humanizeEvent(event: string): string {
 /** Maps event types to DeployHQ-style badge colors */
 function getEventBadgeClasses(event: string): { bg: string; text: string; dot: string } {
   if (event.includes('completed') || event.includes('success')) {
-    return { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' };
+    return { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' };
   }
   if (event.includes('failed') || event.includes('error')) {
-    return { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' };
+    return { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' };
   }
   if (event.includes('running') || event.includes('started')) {
-    return { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' };
+    return { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' };
   }
   if (event.includes('pending') || event.includes('queued')) {
-    return { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500' };
+    return { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' };
   }
   if (event.includes('cancelled') || event.includes('aborted')) {
-    return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-500' };
+    return { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', dot: 'bg-gray-500' };
   }
   if (event.includes('preview')) {
-    return { bg: 'bg-purple-100', text: 'text-purple-700', dot: 'bg-purple-500' };
+    return { bg: 'bg-purple-100 dark:bg-purple-900/40', text: 'text-purple-700 dark:text-purple-400', dot: 'bg-purple-500' };
   }
-  return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-500' };
+  return { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', dot: 'bg-gray-500' };
 }
 
 export default function ActivityItem({ event, onProjectClick }: ActivityItemProps) {
@@ -55,20 +55,20 @@ export default function ActivityItem({ event, onProjectClick }: ActivityItemProp
 
       {/* Right column */}
       <div className="flex-1 min-w-0 flex flex-col items-end">
-        <p className="text-xs text-gray-500 truncate max-w-full">
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-full">
           {onProjectClick ? (
             <button
               onClick={() => onProjectClick(event.project.permalink)}
-              className="text-deployhq-600 hover:text-deployhq-700 hover:underline font-medium"
+              className="text-deployhq-600 dark:text-deployhq-300 hover:text-deployhq-700 dark:hover:text-deployhq-200 hover:underline font-medium"
             >
               {event.project.name}
             </button>
           ) : (
             <span className="font-medium">{event.project.name}</span>
           )}
-          {servers && <span className="text-gray-400"> &middot; {servers}</span>}
+          {servers && <span className="text-gray-400 dark:text-gray-500"> &middot; {servers}</span>}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
           {event.user} &middot; {formatRelativeTime(event.created_at)}
         </p>
       </div>

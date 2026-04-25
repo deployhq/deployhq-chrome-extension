@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { AppView } from '@/shared/types';
 import { getCredentials } from '@/shared/storage';
+import { useTheme } from './hooks/useTheme';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProjectDetail from './pages/ProjectDetail';
@@ -11,6 +12,7 @@ import Header from './components/Header';
 export default function App() {
   const [view, setView] = useState<AppView | null>(null);
   const [loading, setLoading] = useState(true);
+  const { theme, isDark, setTheme, toggleTheme, loaded: themeLoaded } = useTheme();
 
   useEffect(() => {
     async function init() {
@@ -40,7 +42,7 @@ export default function App() {
     init();
   }, []);
 
-  if (loading || !view) {
+  if (loading || !view || !themeLoaded) {
     return (
       <div className="flex items-center justify-center h-[500px]">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-deployhq-600 border-t-transparent" />
@@ -51,11 +53,13 @@ export default function App() {
   const showHeader = view.type !== 'login';
 
   return (
-    <div className="min-h-[500px] flex flex-col">
+    <div className="min-h-[500px] flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {showHeader && (
         <Header
           view={view}
           onNavigate={setView}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
         />
       )}
       <div className="flex-1 overflow-y-auto">
@@ -72,7 +76,7 @@ export default function App() {
             onNavigate={setView}
           />
         )}
-        {view.type === 'settings' && <Settings onNavigate={setView} />}
+        {view.type === 'settings' && <Settings onNavigate={setView} theme={theme} onThemeChange={setTheme} />}
       </div>
     </div>
   );

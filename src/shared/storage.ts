@@ -3,16 +3,20 @@ import type { Credentials } from './types';
 const CREDENTIALS_KEY = 'deployhq_credentials';
 const SETTINGS_KEY = 'deployhq_settings';
 
+export type ThemePreference = 'light' | 'dark' | 'system';
+
 export interface Settings {
   pollIntervalSeconds: number;
   notificationsEnabled: boolean;
   gitPlatformIntegration: boolean;
+  theme: ThemePreference;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   pollIntervalSeconds: 60,
   notificationsEnabled: true,
   gitPlatformIntegration: true,
+  theme: 'system',
 };
 
 export async function getCredentials(): Promise<Credentials | null> {

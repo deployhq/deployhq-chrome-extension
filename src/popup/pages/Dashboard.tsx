@@ -82,14 +82,14 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const tabClasses = (t: Tab) =>
     `px-4 py-2 text-sm ${
       tab === t
-        ? 'text-deployhq-600 border-b-2 border-deployhq-600 font-medium'
-        : 'text-gray-500 hover:text-gray-700'
+        ? 'text-deployhq-600 dark:text-deployhq-300 border-b-2 border-deployhq-600 dark:border-deployhq-400 font-medium'
+        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
     }`;
 
   return (
     <div className="flex flex-col">
       {/* Tab bar */}
-      <div className="flex border-b border-gray-200" role="tablist">
+      <div className="flex border-b border-gray-200 dark:border-gray-700" role="tablist">
         <button className={tabClasses('activity')} onClick={() => setTab('activity')} role="tab" aria-selected={tab === 'activity'}>
           Activity
         </button>
@@ -107,15 +107,15 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </div>
           )}
           <div className="mt-1">
-            <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
+            <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-800/50">
               Recent Activity
             </h3>
             {events.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 text-sm">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
                 No recent activity
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                 {events.map((event, index) => (
                   <ActivityItem
                     key={`${event.created_at}-${index}`}
@@ -133,22 +133,22 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
       {tab === 'projects' && (
         <div role="tabpanel">
-          <div className="px-4 py-3 border-b border-gray-200 bg-white sticky top-0">
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0">
             <input
               type="text"
               placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-gray-50"
+              className="w-full text-sm px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
             />
           </div>
 
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 text-sm">
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
               {search ? 'No projects match your search.' : 'No projects found.'}
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-100 dark:divide-gray-800">
               {filtered.map((project) => (
                 <ProjectRow
                   key={project.identifier}
@@ -172,22 +172,22 @@ function ProjectRow({ project, onClick, onStar }: { project: Project; onClick: (
 
   return (
     <li>
-      <div className="flex items-center hover:bg-gray-50 transition-colors">
+      <div className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
         <button
           onClick={onClick}
           className="flex-1 px-4 py-3 flex items-center gap-3 text-left min-w-0"
         >
-          <div className="w-8 h-8 bg-deployhq-100 text-deployhq-700 rounded-lg flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="w-8 h-8 bg-deployhq-100 dark:bg-deployhq-900/50 text-deployhq-700 dark:text-deployhq-300 rounded-lg flex items-center justify-center text-xs font-bold shrink-0">
             {project.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{project.name}</p>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{project.name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {project.repository?.url ?? 'No repository'}
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xs text-gray-400">{lastDeployed}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">{lastDeployed}</p>
           </div>
         </button>
         <button
@@ -196,7 +196,7 @@ function ProjectRow({ project, onClick, onStar }: { project: Project; onClick: (
           aria-label={project.starred ? 'Unstar project' : 'Star project'}
         >
           <svg
-            className={`w-4 h-4 ${project.starred ? 'text-yellow-400 fill-current' : 'text-gray-300 hover:text-yellow-300'} transition-colors`}
+            className={`w-4 h-4 ${project.starred ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-300'} transition-colors`}
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={2}

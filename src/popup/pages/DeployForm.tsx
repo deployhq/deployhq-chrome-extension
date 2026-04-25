@@ -163,16 +163,16 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
     if (aborted) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h3 className="text-sm font-bold text-gray-900 mb-1">Deployment Aborted</h3>
-          <p className="text-xs text-gray-500 mb-4">The deployment has been cancelled.</p>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">Deployment Aborted</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">The deployment has been cancelled.</p>
           <button
             onClick={() => onNavigate({ type: 'project', permalink })}
-            className="text-sm text-deployhq-600 hover:underline font-medium"
+            className="text-sm text-deployhq-600 dark:text-deployhq-300 hover:underline font-medium"
           >
             Back to Project
           </button>
@@ -182,29 +182,29 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
 
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mb-4">
+          <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-sm font-bold text-gray-900 mb-1">Deployment Queued</h3>
-        <p className="text-xs text-gray-500 mb-4">Your deployment is being processed.</p>
+        <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">Deployment Queued</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Your deployment is being processed.</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={openDeploymentLogs}
-            className="text-sm text-deployhq-600 hover:underline font-medium"
+            className="text-sm text-deployhq-600 dark:text-deployhq-300 hover:underline font-medium"
           >
             View Deployment Logs
           </button>
           <button
             onClick={handleAbort}
             disabled={aborting}
-            className="text-xs px-4 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs px-4 py-1.5 rounded-lg bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {aborting ? 'Aborting...' : 'Abort Deployment'}
           </button>
           {abortError && (
-            <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{abortError}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded-lg">{abortError}</p>
           )}
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
 
   return (
     <div className="p-4">
-      <h2 className="text-sm font-bold text-gray-900 mb-4">New Deployment</h2>
+      <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">New Deployment</h2>
 
       {noTargets ? (
         <ErrorMessage message="No servers or server groups configured for this project." />
@@ -223,7 +223,7 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
         <form onSubmit={handleDeploy} className="space-y-4">
           {/* Target selection */}
           <div>
-            <label htmlFor="target" className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="target" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               Deploy to
             </label>
             <select
@@ -231,7 +231,7 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
               value={selectedTarget}
               onChange={(e) => handleTargetChange(e.target.value)}
               required
-              className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 bg-white"
+              className="w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 bg-white dark:bg-gray-800 dark:text-gray-100"
             >
               <option value="">Select target...</option>
               {groups.length > 0 && (
@@ -257,14 +257,14 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
 
           {/* Branch selection */}
           <div>
-            <label htmlFor="branch" className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="branch" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               Branch
             </label>
             <select
               id="branch"
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 bg-white"
+              className="w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 bg-white dark:bg-gray-800 dark:text-gray-100"
             >
               {branches.map((b) => (
                 <option key={b} value={b}>
@@ -277,17 +277,17 @@ export default function DeployForm({ permalink, branch: initialBranch, revision:
           {/* Revision (if provided from content script) */}
           {initialRevision && (
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Revision
               </label>
-              <code className="block text-xs text-gray-600 bg-gray-100 px-3 py-2 rounded-lg font-mono">
+              <code className="block text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg font-mono">
                 {initialRevision}
               </code>
             </div>
           )}
 
           {error && (
-            <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{error}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded-lg">{error}</p>
           )}
 
           <button

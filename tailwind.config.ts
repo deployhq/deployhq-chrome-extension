@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}', './popup.html'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {

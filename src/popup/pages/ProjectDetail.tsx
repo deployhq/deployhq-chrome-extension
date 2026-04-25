@@ -84,10 +84,10 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
   return (
     <div className="pb-4">
       {/* Project header */}
-      <div className="px-4 py-3 bg-white border-b border-gray-200">
-        <h2 className="text-sm font-bold text-gray-900">{project.name}</h2>
+      <div className="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">{project.name}</h2>
         {project.repository && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{project.repository.url}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{project.repository.url}</p>
         )}
       </div>
 
@@ -109,7 +109,7 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
         const ungrouped = servers.filter((s) => !s.server_group_identifier);
         return ungrouped.length > 0 ? (
           <Section title="Servers">
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-100 dark:divide-gray-800">
               {ungrouped.map((server) => (
                 <ServerRow key={server.identifier} server={server} />
               ))}
@@ -117,7 +117,7 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
           </Section>
         ) : servers.length === 0 ? (
           <Section title="Servers">
-            <p className="px-4 text-xs text-gray-400">No servers configured</p>
+            <p className="px-4 text-xs text-gray-400 dark:text-gray-500">No servers configured</p>
           </Section>
         ) : null;
       })()}
@@ -125,7 +125,7 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
       {/* Server Groups with nested servers */}
       {groups.length > 0 && (
         <Section title="Server Groups">
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
             {groups.map((group) => {
               const groupServers = servers.filter(
                 (s) => s.server_group_identifier === group.identifier
@@ -133,15 +133,15 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
               return (
                 <li key={group.identifier} className="py-2">
                   <div className="px-4">
-                    <p className="text-sm font-medium text-gray-900">{group.name}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{group.name}</p>
                     {(group.branch || group.transfer_order) && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {[group.branch, group.transfer_order].filter(Boolean).join(' / ')}
                       </p>
                     )}
                   </div>
                   {groupServers.length > 0 && (
-                    <ul className="mt-1 ml-4 divide-y divide-gray-50">
+                    <ul className="mt-1 ml-4 divide-y divide-gray-50 dark:divide-gray-800">
                       {groupServers.map((server) => (
                         <ServerRow key={server.identifier} server={server} />
                       ))}
@@ -157,25 +157,25 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
       {/* Recent Deployments */}
       <Section title="Recent Deployments">
         {deployments.length === 0 ? (
-          <p className="px-4 text-xs text-gray-400">No deployments yet</p>
+          <p className="px-4 text-xs text-gray-400 dark:text-gray-500">No deployments yet</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
             {deployments.slice(0, 5).map((dep) => (
               <li key={dep.identifier} className="px-4 py-2 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <StatusBadge status={dep.status} />
                     {typeof dep.end_revision === 'string' && dep.end_revision && (
-                      <code className="text-xs text-gray-400 font-mono">
+                      <code className="text-xs text-gray-400 dark:text-gray-500 font-mono">
                         {dep.end_revision.slice(0, 7)}
                       </code>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                     {dep.servers?.map((s) => s.name).join(', ')}
                     {dep.branch && <> &middot; {dep.branch}</>}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                     {dep.deployer}
                     {dep.timestamps.completed_at && (
                       <> &middot; {formatRelativeTime(dep.timestamps.completed_at)}</>
@@ -186,7 +186,7 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
                   <button
                     onClick={() => handleAbort(dep.identifier)}
                     disabled={actionLoading === dep.identifier}
-                    className={`text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
+                    className={`text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {actionLoading === dep.identifier ? '...' : 'Abort'}
                   </button>
@@ -195,7 +195,7 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
                   <button
                     onClick={() => handleRetry(dep.identifier)}
                     disabled={actionLoading === dep.identifier}
-                    className={`text-xs px-2 py-1 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
+                    className={`text-xs px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors${actionLoading === dep.identifier ? ' opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {actionLoading === dep.identifier ? '...' : 'Retry'}
                   </button>
@@ -207,7 +207,7 @@ export default function ProjectDetail({ permalink, onNavigate }: ProjectDetailPr
       </Section>
 
       {actionError && (
-        <p className="mx-4 mt-2 text-xs text-red-600 bg-red-50 p-2 rounded-lg">{actionError}</p>
+        <p className="mx-4 mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded-lg">{actionError}</p>
       )}
     </div>
   );
@@ -217,14 +217,14 @@ function ServerRow({ server }: { server: Server }) {
   return (
     <li className="px-4 py-2 flex items-center gap-3">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">{server.name}</p>
-        <p className="text-xs text-gray-500">
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{server.name}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           {PROTOCOL_LABELS[server.protocol_type] ?? server.protocol_type}
           {server.environment && ` / ${server.environment}`}
         </p>
       </div>
       {typeof server.last_revision === 'string' && server.last_revision && (
-        <code className="text-xs text-gray-400 font-mono">
+        <code className="text-xs text-gray-400 dark:text-gray-500 font-mono">
           {server.last_revision.slice(0, 7)}
         </code>
       )}
@@ -235,11 +235,10 @@ function ServerRow({ server }: { server: Server }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mt-1">
-      <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
+      <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-800/50">
         {title}
       </h3>
       {children}
     </div>
   );
 }
-

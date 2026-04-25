@@ -43,15 +43,15 @@ export default function Login({ onSuccess }: LoginProps) {
     <div className="p-6">
       <div className="text-center mb-6">
         <img src="/icons/icon-128.png" alt="DeployHQ" className="w-12 h-12 mx-auto mb-3" />
-        <h2 className="text-lg font-bold text-gray-900">Connect to DeployHQ</h2>
-        <p className="text-xs text-gray-500 mt-1">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Connect to DeployHQ</h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           Find your API key in Settings &rarr; Security
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label htmlFor="subdomain" className="block text-xs font-medium text-gray-700 mb-1">
+          <label htmlFor="subdomain" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Account subdomain
           </label>
           <div className="flex items-center">
@@ -62,16 +62,16 @@ export default function Login({ onSuccess }: LoginProps) {
               onChange={(e) => setSubdomain(e.target.value)}
               placeholder="mycompany"
               required
-              className="flex-1 text-sm px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500"
+              className="flex-1 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
             />
-            <span className="text-xs text-gray-500 bg-gray-100 border border-l-0 border-gray-300 px-2 py-2 rounded-r-lg">
+            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-l-0 border-gray-300 dark:border-gray-600 px-2 py-2 rounded-r-lg">
               .deployhq.com
             </span>
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email address
           </label>
           <input
@@ -81,12 +81,12 @@ export default function Login({ onSuccess }: LoginProps) {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500"
+            className="w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
           />
         </div>
 
         <div>
-          <label htmlFor="apiKey" className="block text-xs font-medium text-gray-700 mb-1">
+          <label htmlFor="apiKey" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             API key
           </label>
           <input
@@ -96,12 +96,12 @@ export default function Login({ onSuccess }: LoginProps) {
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="Your 40-character API key"
             required
-            className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500"
+            className="w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-deployhq-500 focus:border-deployhq-500 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
           />
         </div>
 
         {error && (
-          <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{error}</p>
+          <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded-lg">{error}</p>
         )}
 
         <button
@@ -113,13 +113,13 @@ export default function Login({ onSuccess }: LoginProps) {
         </button>
       </form>
 
-      <p className="text-center text-xs text-gray-400 mt-4">
+      <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-4">
         Don&apos;t have an account?{' '}
         <a
           href="https://www.deployhq.com/signup"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-deployhq-600 hover:underline"
+          className="text-deployhq-600 dark:text-deployhq-300 hover:underline"
         >
           Sign up free
         </a>
